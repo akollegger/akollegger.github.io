@@ -4,7 +4,7 @@
   <title><![CDATA[abk]]></title>
   <link href="http://akollegger.github.com/atom.xml" rel="self"/>
   <link href="http://akollegger.github.com/"/>
-  <updated>2011-11-13T19:25:19-08:00</updated>
+  <updated>2011-11-13T20:06:06-08:00</updated>
   <id>http://akollegger.github.com/</id>
   <author>
     <name><![CDATA[Andreas Kollegger]]></name>
@@ -19,6 +19,38 @@
     <updated>2011-11-13T18:20:00-08:00</updated>
     <id>http://akollegger.github.com/blog/2011/11/13/hello-octo</id>
     <content type="html"><![CDATA[<p>A simple, simple post for learning about <a href="http://octopress.org">Octopress</a>.</p>
+
+<p>Sample code&#8230;</p>
+
+<figure class='code'><figcaption><span>Sample Maven </span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;repositories&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;repository&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;url&gt;</span>http://nosuch.com<span class="nt">&lt;/url&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/repository&gt;</span>
+</span><span class='line'><span class="nt">&lt;/repositories&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>Enterprise Coding</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Foo</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="nf">Foo</span><span class="o">(</span><span class="n">String</span> <span class="n">bar</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="o">;</span> <span class="c1">// zero-arg constructors make me feel sooo productive</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
 ]]></content>
   </entry>
   
