@@ -2,14 +2,18 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://akollegger.github.com/blog/2011/11/13/hello-octo/</loc>
-        <lastmod>2011-11-13T19:34:03-08:00</lastmod>
+        <lastmod>2011-11-15T20:44:10-08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://akollegger.github.com/blog/2011/11/15/sprouting-in-spring-data-neo4j/</loc>
+        <lastmod>2011-11-15T21:03:46-08:00</lastmod>
     </url>
     <url>
         <loc>http://akollegger.github.com/blog/archives/</loc>
-        <lastmod>2011-11-13T19:34:03-08:00</lastmod>
+        <lastmod>2011-11-15T21:03:46-08:00</lastmod>
     </url>
     <url>
         <loc>http://akollegger.github.com/</loc>
-        <lastmod>2011-11-13T19:34:03-08:00</lastmod>
+        <lastmod>2011-11-15T21:03:46-08:00</lastmod>
     </url>
 </urlset>
