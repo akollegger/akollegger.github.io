@@ -8,3 +8,8 @@ Related material.
 * `rake new_page["page name"]` to create a new page
 * `rake generate` - to generate static website
 * `rake deploy` - to publish the website
+
+## References
+
+* [Octopress](http://octopress.org) - jekyll-based blogging for this website
+
