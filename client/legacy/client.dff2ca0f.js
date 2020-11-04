@@ -932,10 +932,6 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function noop() {}
 
-var identity = function identity(x) {
-  return x;
-};
-
 function assign(tar, src) {
   // @ts-ignore
   for (var k in src) {
@@ -1025,49 +1021,6 @@ function update_slot(slot, slot_definition, ctx, $$scope, dirty, get_slot_change
   }
 }
 
-var is_client = typeof window !== 'undefined';
-var now = is_client ? function () {
-  return window.performance.now();
-} : function () {
-  return Date.now();
-};
-var raf = is_client ? function (cb) {
-  return requestAnimationFrame(cb);
-} : noop; // used internally for testing
-
-var tasks = new Set();
-
-function run_tasks(now) {
-  tasks.forEach(function (task) {
-    if (!task.c(now)) {
-      tasks.delete(task);
-      task.f();
-    }
-  });
-  if (tasks.size !== 0) raf(run_tasks);
-}
-/**
- * Creates a new task that runs on each raf frame
- * until it returns a falsy value or is aborted
- */
-
-
-function loop(callback) {
-  var task;
-  if (tasks.size === 0) raf(run_tasks);
-  return {
-    promise: new Promise(function (fulfill) {
-      tasks.add(task = {
-        c: callback,
-        f: fulfill
-      });
-    }),
-    abort: function abort() {
-      tasks.delete(task);
-    }
-  };
-}
-
 function append(target, node) {
   target.appendChild(node);
 }
@@ -1104,13 +1057,6 @@ function space() {
 
 function empty() {
   return text('');
-}
-
-function listen(node, event, handler, options) {
-  node.addEventListener(event, handler, options);
-  return function () {
-    return node.removeEventListener(event, handler, options);
-  };
 }
 
 function attr(node, attribute, value) {
@@ -1229,83 +1175,6 @@ var HtmlTag = /*#__PURE__*/function () {
   return HtmlTag;
 }();
 
-var active_docs = new Set();
-var active = 0; // https://github.com/darkskyapp/string-hash/blob/master/index.js
-
-function hash(str) {
-  var hash = 5381;
-  var i = str.length;
-
-  while (i--) {
-    hash = (hash << 5) - hash ^ str.charCodeAt(i);
-  }
-
-  return hash >>> 0;
-}
-
-function create_rule(node, a, b, duration, delay, ease, fn) {
-  var uid = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : 0;
-  var step = 16.666 / duration;
-  var keyframes = '{\n';
-
-  for (var p = 0; p <= 1; p += step) {
-    var t = a + (b - a) * ease(p);
-    keyframes += p * 100 + "%{".concat(fn(t, 1 - t), "}\n");
-  }
-
-  var rule = keyframes + "100% {".concat(fn(b, 1 - b), "}\n}");
-  var name = "__svelte_".concat(hash(rule), "_").concat(uid);
-  var doc = node.ownerDocument;
-  active_docs.add(doc);
-  var stylesheet = doc.__svelte_stylesheet || (doc.__svelte_stylesheet = doc.head.appendChild(element('style')).sheet);
-  var current_rules = doc.__svelte_rules || (doc.__svelte_rules = {});
-
-  if (!current_rules[name]) {
-    current_rules[name] = true;
-    stylesheet.insertRule("@keyframes ".concat(name, " ").concat(rule), stylesheet.cssRules.length);
-  }
-
-  var animation = node.style.animation || '';
-  node.style.animation = "".concat(animation ? "".concat(animation, ", ") : '').concat(name, " ").concat(duration, "ms linear ").concat(delay, "ms 1 both");
-  active += 1;
-  return name;
-}
-
-function delete_rule(node, name) {
-  var previous = (node.style.animation || '').split(', ');
-  var next = previous.filter(name ? function (anim) {
-    return anim.indexOf(name) < 0;
-  } // remove specific animation
-  : function (anim) {
-    return anim.indexOf('__svelte') === -1;
-  } // remove all Svelte animations
-  );
-  var deleted = previous.length - next.length;
-
-  if (deleted) {
-    node.style.animation = next.join(', ');
-    active -= deleted;
-    if (!active) clear_rules();
-  }
-}
-
-function clear_rules() {
-  raf(function () {
-    if (active) return;
-    active_docs.forEach(function (doc) {
-      var stylesheet = doc.__svelte_stylesheet;
-      var i = stylesheet.cssRules.length;
-
-      while (i--) {
-        stylesheet.deleteRule(i);
-      }
-
-      doc.__svelte_rules = {};
-    });
-    active_docs.clear();
-  });
-}
-
 var current_component;
 
 function set_current_component(component) {
@@ -1402,23 +1271,6 @@ function update($$) {
   }
 }
 
-var promise;
-
-function wait() {
-  if (!promise) {
-    promise = Promise.resolve();
-    promise.then(function () {
-      promise = null;
-    });
-  }
-
-  return promise;
-}
-
-function dispatch(node, direction, kind) {
-  node.dispatchEvent(custom_event("".concat(direction ? 'intro' : 'outro').concat(kind)));
-}
-
 var outroing = new Set();
 var outros;
 
@@ -1460,133 +1312,6 @@ function transition_out(block, local, detach, callback) {
     });
     block.o(local);
   }
-}
-
-var null_transition = {
-  duration: 0
-};
-
-function create_bidirectional_transition(node, fn, params, intro) {
-  var config = fn(node, params);
-  var t = intro ? 0 : 1;
-  var running_program = null;
-  var pending_program = null;
-  var animation_name = null;
-
-  function clear_animation() {
-    if (animation_name) delete_rule(node, animation_name);
-  }
-
-  function init(program, duration) {
-    var d = program.b - t;
-    duration *= Math.abs(d);
-    return {
-      a: t,
-      b: program.b,
-      d: d,
-      duration: duration,
-      start: program.start,
-      end: program.start + duration,
-      group: program.group
-    };
-  }
-
-  function go(b) {
-    var _ref3 = config || null_transition,
-        _ref3$delay = _ref3.delay,
-        delay = _ref3$delay === void 0 ? 0 : _ref3$delay,
-        _ref3$duration = _ref3.duration,
-        duration = _ref3$duration === void 0 ? 300 : _ref3$duration,
-        _ref3$easing = _ref3.easing,
-        easing = _ref3$easing === void 0 ? identity : _ref3$easing,
-        _ref3$tick = _ref3.tick,
-        tick = _ref3$tick === void 0 ? noop : _ref3$tick,
-        css = _ref3.css;
-
-    var program = {
-      start: now() + delay,
-      b: b
-    };
-
-    if (!b) {
-      // @ts-ignore todo: improve typings
-      program.group = outros;
-      outros.r += 1;
-    }
-
-    if (running_program || pending_program) {
-      pending_program = program;
-    } else {
-      // if this is an intro, and there's a delay, we need to do
-      // an initial tick and/or apply CSS animation immediately
-      if (css) {
-        clear_animation();
-        animation_name = create_rule(node, t, b, duration, delay, easing, css);
-      }
-
-      if (b) tick(0, 1);
-      running_program = init(program, duration);
-      add_render_callback(function () {
-        return dispatch(node, b, 'start');
-      });
-      loop(function (now) {
-        if (pending_program && now > pending_program.start) {
-          running_program = init(pending_program, duration);
-          pending_program = null;
-          dispatch(node, running_program.b, 'start');
-
-          if (css) {
-            clear_animation();
-            animation_name = create_rule(node, t, running_program.b, running_program.duration, 0, easing, config.css);
-          }
-        }
-
-        if (running_program) {
-          if (now >= running_program.end) {
-            tick(t = running_program.b, 1 - t);
-            dispatch(node, running_program.b, 'end');
-
-            if (!pending_program) {
-              // we're done
-              if (running_program.b) {
-                // intro — we can tidy up immediately
-                clear_animation();
-              } else {
-                // outro — needs to be coordinated
-                if (! --running_program.group.r) run_all(running_program.group.c);
-              }
-            }
-
-            running_program = null;
-          } else if (now >= running_program.start) {
-            var p = now - running_program.start;
-            t = running_program.a + running_program.d * easing(p / running_program.duration);
-            tick(t, 1 - t);
-          }
-        }
-
-        return !!(running_program || pending_program);
-      });
-    }
-  }
-
-  return {
-    run: function run(b) {
-      if (is_function(config)) {
-        wait().then(function () {
-          // @ts-ignore
-          config = config();
-          go(b);
-        });
-      } else {
-        go(b);
-      }
-    },
-    end: function end() {
-      clear_animation();
-      running_program = pending_program = null;
-    }
-  };
 }
 
 var globals = typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : global;
@@ -1814,28 +1539,6 @@ function detach_dev(node) {
   detach(node);
 }
 
-function listen_dev(node, event, handler, options, has_prevent_default, has_stop_propagation) {
-  var modifiers = options === true ? ['capture'] : options ? Array.from(Object.keys(options)) : [];
-  if (has_prevent_default) modifiers.push('preventDefault');
-  if (has_stop_propagation) modifiers.push('stopPropagation');
-  dispatch_dev('SvelteDOMAddEventListener', {
-    node: node,
-    event: event,
-    handler: handler,
-    modifiers: modifiers
-  });
-  var dispose = listen(node, event, handler, options);
-  return function () {
-    dispatch_dev('SvelteDOMRemoveEventListener', {
-      node: node,
-      event: event,
-      handler: handler,
-      modifiers: modifiers
-    });
-    dispose();
-  };
-}
-
 function attr_dev(node, attribute, value) {
   attr(node, attribute, value);
   if (value == null) dispatch_dev('SvelteDOMRemoveAttribute', {
@@ -1998,35 +1701,10 @@ var file = "src/components/Nav.svelte";
 function create_fragment(ctx) {
   var nav;
   var ul;
-  var li0;
-  var a0;
-  var t0;
-  var a0_aria_current_value;
-  var t1;
-  var li1;
-  var a1;
-  var t2;
-  var a1_aria_current_value;
-  var t3;
-  var li2;
-  var a2;
-  var t4;
-  var a2_aria_current_value;
   var block = {
     c: function create() {
       nav = element("nav");
       ul = element("ul");
-      li0 = element("li");
-      a0 = element("a");
-      t0 = text("home");
-      t1 = space();
-      li1 = element("li");
-      a1 = element("a");
-      t2 = text("about");
-      t3 = space();
-      li2 = element("li");
-      a2 = element("a");
-      t4 = text("blog");
       this.h();
     },
     l: function claim(nodes) {
@@ -2038,126 +1716,21 @@ function create_fragment(ctx) {
         class: true
       });
       var ul_nodes = children(ul);
-      li0 = claim_element(ul_nodes, "LI", {
-        class: true
-      });
-      var li0_nodes = children(li0);
-      a0 = claim_element(li0_nodes, "A", {
-        "aria-current": true,
-        href: true,
-        class: true
-      });
-      var a0_nodes = children(a0);
-      t0 = claim_text(a0_nodes, "home");
-      a0_nodes.forEach(detach_dev);
-      li0_nodes.forEach(detach_dev);
-      t1 = claim_space(ul_nodes);
-      li1 = claim_element(ul_nodes, "LI", {
-        class: true
-      });
-      var li1_nodes = children(li1);
-      a1 = claim_element(li1_nodes, "A", {
-        "aria-current": true,
-        href: true,
-        class: true
-      });
-      var a1_nodes = children(a1);
-      t2 = claim_text(a1_nodes, "about");
-      a1_nodes.forEach(detach_dev);
-      li1_nodes.forEach(detach_dev);
-      t3 = claim_space(ul_nodes);
-      li2 = claim_element(ul_nodes, "LI", {
-        class: true
-      });
-      var li2_nodes = children(li2);
-      a2 = claim_element(li2_nodes, "A", {
-        rel: true,
-        "aria-current": true,
-        href: true,
-        class: true
-      });
-      var a2_nodes = children(a2);
-      t4 = claim_text(a2_nodes, "blog");
-      a2_nodes.forEach(detach_dev);
-      li2_nodes.forEach(detach_dev);
       ul_nodes.forEach(detach_dev);
       nav_nodes.forEach(detach_dev);
       this.h();
     },
     h: function hydrate() {
-      attr_dev(a0, "aria-current", a0_aria_current_value =
-      /*segment*/
-      ctx[0] === undefined ? "page" : undefined);
-      attr_dev(a0, "href", ".");
-      attr_dev(a0, "class", "svelte-nix1ia");
-      add_location(a0, file, 51, 6, 637);
-      attr_dev(li0, "class", "svelte-nix1ia");
-      add_location(li0, file, 51, 2, 633);
-      attr_dev(a1, "aria-current", a1_aria_current_value =
-      /*segment*/
-      ctx[0] === "about" ? "page" : undefined);
-      attr_dev(a1, "href", "about");
-      attr_dev(a1, "class", "svelte-nix1ia");
-      add_location(a1, file, 52, 6, 729);
-      attr_dev(li1, "class", "svelte-nix1ia");
-      add_location(li1, file, 52, 2, 725);
-      attr_dev(a2, "rel", "prefetch");
-      attr_dev(a2, "aria-current", a2_aria_current_value =
-      /*segment*/
-      ctx[0] === "blog" ? "page" : undefined);
-      attr_dev(a2, "href", "blog");
-      attr_dev(a2, "class", "svelte-nix1ia");
-      add_location(a2, file, 56, 6, 982);
-      attr_dev(li2, "class", "svelte-nix1ia");
-      add_location(li2, file, 56, 2, 978);
-      attr_dev(ul, "class", "svelte-nix1ia");
-      add_location(ul, file, 50, 1, 626);
-      attr_dev(nav, "class", "svelte-nix1ia");
-      add_location(nav, file, 49, 0, 619);
+      attr_dev(ul, "class", "svelte-g2leqx");
+      add_location(ul, file, 50, 1, 642);
+      attr_dev(nav, "class", "svelte-g2leqx");
+      add_location(nav, file, 49, 0, 635);
     },
     m: function mount(target, anchor) {
       insert_dev(target, nav, anchor);
       append_dev(nav, ul);
-      append_dev(ul, li0);
-      append_dev(li0, a0);
-      append_dev(a0, t0);
-      append_dev(ul, t1);
-      append_dev(ul, li1);
-      append_dev(li1, a1);
-      append_dev(a1, t2);
-      append_dev(ul, t3);
-      append_dev(ul, li2);
-      append_dev(li2, a2);
-      append_dev(a2, t4);
     },
-    p: function update(ctx, _ref) {
-      var _ref2 = _slicedToArray(_ref, 1),
-          dirty = _ref2[0];
-
-      if (dirty &
-      /*segment*/
-      1 && a0_aria_current_value !== (a0_aria_current_value =
-      /*segment*/
-      ctx[0] === undefined ? "page" : undefined)) {
-        attr_dev(a0, "aria-current", a0_aria_current_value);
-      }
-
-      if (dirty &
-      /*segment*/
-      1 && a1_aria_current_value !== (a1_aria_current_value =
-      /*segment*/
-      ctx[0] === "about" ? "page" : undefined)) {
-        attr_dev(a1, "aria-current", a1_aria_current_value);
-      }
-
-      if (dirty &
-      /*segment*/
-      1 && a2_aria_current_value !== (a2_aria_current_value =
-      /*segment*/
-      ctx[0] === "blog" ? "page" : undefined)) {
-        attr_dev(a2, "aria-current", a2_aria_current_value);
-      }
-    },
+    p: noop,
     i: noop,
     o: noop,
     d: function destroy(detaching) {
@@ -2174,36 +1747,16 @@ function create_fragment(ctx) {
   return block;
 }
 
-function instance($$self, $$props, $$invalidate) {
+function instance($$self, $$props) {
   var _$$props$$$slots = $$props.$$slots,
       slots = _$$props$$$slots === void 0 ? {} : _$$props$$$slots,
       $$scope = $$props.$$scope;
   validate_slots("Nav", slots, []);
-  var segment = $$props.segment;
-  var writable_props = ["segment"];
+  var writable_props = [];
   Object.keys($$props).forEach(function (key) {
     if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn("<Nav> was created with unknown prop '".concat(key, "'"));
   });
-
-  $$self.$$set = function ($$props) {
-    if ("segment" in $$props) $$invalidate(0, segment = $$props.segment);
-  };
-
-  $$self.$capture_state = function () {
-    return {
-      segment: segment
-    };
-  };
-
-  $$self.$inject_state = function ($$props) {
-    if ("segment" in $$props) $$invalidate(0, segment = $$props.segment);
-  };
-
-  if ($$props && "$$inject" in $$props) {
-    $$self.$inject_state($$props.$$inject);
-  }
-
-  return [segment];
+  return [];
 }
 
 var Nav = /*#__PURE__*/function (_SvelteComponentDev) {
@@ -2217,36 +1770,15 @@ var Nav = /*#__PURE__*/function (_SvelteComponentDev) {
     _classCallCheck(this, Nav);
 
     _this = _super.call(this, options);
-    init(_assertThisInitialized(_this), options, instance, create_fragment, safe_not_equal, {
-      segment: 0
-    });
+    init(_assertThisInitialized(_this), options, instance, create_fragment, safe_not_equal, {});
     dispatch_dev("SvelteRegisterComponent", {
       component: _assertThisInitialized(_this),
       tagName: "Nav",
       options: options,
       id: create_fragment.name
     });
-    var ctx = _this.$$.ctx;
-    var props = options.props || {};
-
-    if (
-    /*segment*/
-    ctx[0] === undefined && !("segment" in props)) {
-      console.warn("<Nav> was created without expected prop 'segment'");
-    }
-
     return _this;
   }
-
-  _createClass(Nav, [{
-    key: "segment",
-    get: function get() {
-      throw new Error("<Nav>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    },
-    set: function set(value) {
-      throw new Error("<Nav>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    }
-  }]);
 
   return Nav;
 }(SvelteComponentDev);
@@ -2258,25 +1790,11 @@ var file$1 = "src/components/Footer.svelte";
 
 function create_fragment$1(ctx) {
   var footer;
-  var p;
-  var t0;
-  var a0;
-  var t1;
-  var t2;
-  var a1;
-  var t3;
-  var t4;
+  var t;
   var block = {
     c: function create() {
       footer = element("footer");
-      p = element("p");
-      t0 = text("Want more? Checkout my blog\n    ");
-      a0 = element("a");
-      t1 = text("codechips.me");
-      t2 = text("\n    and make sure to follow me on\n    ");
-      a1 = element("a");
-      t3 = text("Twitter");
-      t4 = text("\n    ✌");
+      t = text("♘");
       this.h();
     },
     l: function claim(nodes) {
@@ -2284,53 +1802,17 @@ function create_fragment$1(ctx) {
         class: true
       });
       var footer_nodes = children(footer);
-      p = claim_element(footer_nodes, "P", {
-        class: true
-      });
-      var p_nodes = children(p);
-      t0 = claim_text(p_nodes, "Want more? Checkout my blog\n    ");
-      a0 = claim_element(p_nodes, "A", {
-        href: true,
-        class: true
-      });
-      var a0_nodes = children(a0);
-      t1 = claim_text(a0_nodes, "codechips.me");
-      a0_nodes.forEach(detach_dev);
-      t2 = claim_text(p_nodes, "\n    and make sure to follow me on\n    ");
-      a1 = claim_element(p_nodes, "A", {
-        href: true,
-        class: true
-      });
-      var a1_nodes = children(a1);
-      t3 = claim_text(a1_nodes, "Twitter");
-      a1_nodes.forEach(detach_dev);
-      t4 = claim_text(p_nodes, "\n    ✌");
-      p_nodes.forEach(detach_dev);
+      t = claim_text(footer_nodes, "♘");
       footer_nodes.forEach(detach_dev);
       this.h();
     },
     h: function hydrate() {
-      attr_dev(a0, "href", "https://codechips.me/");
-      attr_dev(a0, "class", "svelte-twlvu7");
-      add_location(a0, file$1, 11, 4, 226);
-      attr_dev(a1, "href", "https://twitter.com/codechips");
-      attr_dev(a1, "class", "svelte-twlvu7");
-      add_location(a1, file$1, 13, 4, 313);
-      attr_dev(p, "class", "container text-lg py-10 max-w-4xl");
-      add_location(p, file$1, 9, 2, 144);
       attr_dev(footer, "class", "border-t border-gray-200");
-      add_location(footer, file$1, 8, 0, 100);
+      add_location(footer, file$1, 2, 0, 2);
     },
     m: function mount(target, anchor) {
       insert_dev(target, footer, anchor);
-      append_dev(footer, p);
-      append_dev(p, t0);
-      append_dev(p, a0);
-      append_dev(a0, t1);
-      append_dev(p, t2);
-      append_dev(p, a1);
-      append_dev(a1, t3);
-      append_dev(p, t4);
+      append_dev(footer, t);
     },
     p: noop,
     i: noop,
@@ -3425,19 +2907,19 @@ var App = /*#__PURE__*/function (_SvelteComponentDev) {
 var ignore = [/^\/blog\.json$/, /^\/blog\/([^/]+?)\.json$/];
 var components = [{
   js: function js() {
-    return Promise.all([import('./index.2e65789e.js'), __inject_styles(["client-6e414011.css","index-293dee34.css"])]).then(function(x) { return x[0]; });
+    return Promise.all([import('./index.8fab4f9b.js'), __inject_styles(["client-4783ec9c.css","index-8853ea01.css"])]).then(function(x) { return x[0]; });
   }
 }, {
   js: function js() {
-    return Promise.all([import('./about.cf083bc7.js'), __inject_styles(["client-6e414011.css"])]).then(function(x) { return x[0]; });
+    return Promise.all([import('./about.f660a895.js'), __inject_styles(["client-4783ec9c.css"])]).then(function(x) { return x[0]; });
   }
 }, {
   js: function js() {
-    return Promise.all([import('./index.d2fca1dd.js'), __inject_styles(["client-6e414011.css","index-feeec1db.css"])]).then(function(x) { return x[0]; });
+    return Promise.all([import('./index.e8b17545.js'), __inject_styles(["client-4783ec9c.css","index-feeec1db.css"])]).then(function(x) { return x[0]; });
   }
 }, {
   js: function js() {
-    return Promise.all([import('./[slug].fc1cab02.js'), __inject_styles(["client-6e414011.css"])]).then(function(x) { return x[0]; });
+    return Promise.all([import('./[slug].d9b3488c.js'), __inject_styles(["client-4783ec9c.css"])]).then(function(x) { return x[0]; });
   }
 }];
 var routes = function (d) {
@@ -4359,6 +3841,6 @@ start$1({
   target: document.querySelector('#sapper')
 });
 
-export { validate_slots as A, add_render_callback as B, group_outros as C, noop as D, _createClass as E, validate_each_argument as F, set_data_dev as G, destroy_each as H, regenerator as I, HtmlTag as J, SvelteComponentDev as S, _inherits as _, _getPrototypeOf as a, _possibleConstructorReturn as b, _classCallCheck as c, _assertThisInitialized as d, dispatch_dev as e, element as f, space as g, claim_element as h, init as i, children as j, claim_text as k, detach_dev as l, claim_space as m, attr_dev as n, add_location as o, insert_dev as p, append_dev as q, create_bidirectional_transition as r, safe_not_equal as s, text as t, query_selector_all as u, listen_dev as v, _slicedToArray as w, transition_in as x, transition_out as y, check_outros as z };
+export { set_data_dev as A, regenerator as B, HtmlTag as H, SvelteComponentDev as S, _inherits as _, _getPrototypeOf as a, _possibleConstructorReturn as b, _classCallCheck as c, _assertThisInitialized as d, dispatch_dev as e, element as f, space as g, claim_element as h, init as i, children as j, claim_text as k, detach_dev as l, claim_space as m, attr_dev as n, add_location as o, insert_dev as p, append_dev as q, noop as r, safe_not_equal as s, text as t, query_selector_all as u, validate_each_argument as v, _slicedToArray as w, destroy_each as x, validate_slots as y, _createClass as z };
 
 import __inject_styles from './inject_styles.fe622066.js';
