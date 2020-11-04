@@ -20,5 +20,9 @@ jobs:
         # Version Spec of the version to use.  Examples: 12.x, 10.15.1, >=10.15.0
         node-version: 12.x
     - run: npm ci
-    - run: npm run deploy
-
+    - run: npm run export
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
