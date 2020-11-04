@@ -3425,19 +3425,19 @@ var App = /*#__PURE__*/function (_SvelteComponentDev) {
 var ignore = [/^\/blog\.json$/, /^\/blog\/([^/]+?)\.json$/];
 var components = [{
   js: function js() {
-    return Promise.all([import('./index.37b6e35f.js'), __inject_styles(["client-6e414011.css","index-293dee34.css"])]).then(function(x) { return x[0]; });
+    return Promise.all([import('./index.2e65789e.js'), __inject_styles(["client-6e414011.css","index-293dee34.css"])]).then(function(x) { return x[0]; });
   }
 }, {
   js: function js() {
-    return Promise.all([import('./about.516aa226.js'), __inject_styles(["client-6e414011.css"])]).then(function(x) { return x[0]; });
+    return Promise.all([import('./about.cf083bc7.js'), __inject_styles(["client-6e414011.css"])]).then(function(x) { return x[0]; });
   }
 }, {
   js: function js() {
-    return Promise.all([import('./index.c7d47ccd.js'), __inject_styles(["client-6e414011.css","index-feeec1db.css"])]).then(function(x) { return x[0]; });
+    return Promise.all([import('./index.d2fca1dd.js'), __inject_styles(["client-6e414011.css","index-feeec1db.css"])]).then(function(x) { return x[0]; });
   }
 }, {
   js: function js() {
-    return Promise.all([import('./[slug].b49c70b8.js'), __inject_styles(["client-6e414011.css"])]).then(function(x) { return x[0]; });
+    return Promise.all([import('./[slug].fc1cab02.js'), __inject_styles(["client-6e414011.css"])]).then(function(x) { return x[0]; });
   }
 }];
 var routes = function (d) {

@@ -1,4 +1,4 @@
-import { _ as _inherits, a as _getPrototypeOf, b as _possibleConstructorReturn, c as _classCallCheck, i as init, d as _assertThisInitialized, e as dispatch_dev, S as SvelteComponentDev, s as safe_not_equal, g as space, f as element, t as text, u as query_selector_all, l as detach_dev, m as claim_space, h as claim_element, j as children, k as claim_text, o as add_location, n as attr_dev, p as insert_dev, q as append_dev, D as noop, A as validate_slots } from './client.ba53c6e9.js';
+import { _ as _inherits, a as _getPrototypeOf, b as _possibleConstructorReturn, c as _classCallCheck, i as init, d as _assertThisInitialized, e as dispatch_dev, S as SvelteComponentDev, s as safe_not_equal, g as space, f as element, t as text, u as query_selector_all, l as detach_dev, m as claim_space, h as claim_element, j as children, k as claim_text, o as add_location, n as attr_dev, p as insert_dev, q as append_dev, D as noop, A as validate_slots } from './client.bd9a9cfd.js';
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
@@ -10,9 +10,6 @@ function create_fragment(ctx) {
   var h1;
   var t1;
   var t2;
-  var p;
-  var t3;
-  var t4;
   var div;
   var a;
   var img;
@@ -21,11 +18,8 @@ function create_fragment(ctx) {
     c: function create() {
       t0 = space();
       h1 = element("h1");
-      t1 = text("About this site");
+      t1 = text("About ABK");
       t2 = space();
-      p = element("p");
-      t3 = text("This is the 'about' page. There's not much here.");
-      t4 = space();
       div = element("div");
       a = element("a");
       img = element("img");
@@ -37,14 +31,9 @@ function create_fragment(ctx) {
       t0 = claim_space(nodes);
       h1 = claim_element(nodes, "H1", {});
       var h1_nodes = children(h1);
-      t1 = claim_text(h1_nodes, "About this site");
+      t1 = claim_text(h1_nodes, "About ABK");
       h1_nodes.forEach(detach_dev);
       t2 = claim_space(nodes);
-      p = claim_element(nodes, "P", {});
-      var p_nodes = children(p);
-      t3 = claim_text(p_nodes, "This is the 'about' page. There's not much here.");
-      p_nodes.forEach(detach_dev);
-      t4 = claim_space(nodes);
       div = claim_element(nodes, "DIV", {});
       var div_nodes = children(div);
       a = claim_element(div_nodes, "A", {
@@ -64,24 +53,20 @@ function create_fragment(ctx) {
     h: function hydrate() {
       document.title = "About";
       add_location(h1, file, 4, 0, 52);
-      add_location(p, file, 6, 0, 78);
       if (img.src !== (img_src_value = "https://d2fltix0v2e0sb.cloudfront.net/dev-badge.svg")) attr_dev(img, "src", img_src_value);
       attr_dev(img, "alt", "Andreas Kollegger's DEV Profile");
       attr_dev(img, "height", "30");
       attr_dev(img, "width", "30");
-      add_location(img, file, 10, 2, 181);
+      add_location(img, file, 9, 2, 119);
       attr_dev(a, "href", "https://dev.to/akollegger");
-      add_location(a, file, 9, 1, 142);
-      add_location(div, file, 8, 0, 135);
+      add_location(a, file, 8, 1, 80);
+      add_location(div, file, 7, 0, 73);
     },
     m: function mount(target, anchor) {
       insert_dev(target, t0, anchor);
       insert_dev(target, h1, anchor);
       append_dev(h1, t1);
       insert_dev(target, t2, anchor);
-      insert_dev(target, p, anchor);
-      append_dev(p, t3);
-      insert_dev(target, t4, anchor);
       insert_dev(target, div, anchor);
       append_dev(div, a);
       append_dev(a, img);
@@ -93,8 +78,6 @@ function create_fragment(ctx) {
       if (detaching) detach_dev(t0);
       if (detaching) detach_dev(h1);
       if (detaching) detach_dev(t2);
-      if (detaching) detach_dev(p);
-      if (detaching) detach_dev(t4);
       if (detaching) detach_dev(div);
     }
   };
