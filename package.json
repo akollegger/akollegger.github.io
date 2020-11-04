@@ -1,6 +1,6 @@
 {
-  "name": "TODO",
-  "description": "TODO",
+  "name": "akollegger.github.io",
+  "description": "website for abk.rocks",
   "version": "0.0.1",
   "scripts": {
     "dev": "run-p watch:*",
@@ -16,7 +16,8 @@
     "cy:run": "cypress run",
     "cy:open": "cypress open",
     "test": "run-p --race dev cy:run",
-    "deploy": "sapper export --legacy &&  gh-pages -d __sapper__/export"
+    "deploy": "run-s export deploy:gh-pages",
+    "deploy:gh-pages": "gh-pages -d __sapper__/export"
   },
   "dependencies": {
     "compression": "^1.7.4",
