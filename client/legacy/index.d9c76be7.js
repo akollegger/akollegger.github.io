@@ -1,4 +1,4 @@
-import { _ as _inherits, a as _getPrototypeOf, b as _possibleConstructorReturn, c as _classCallCheck, i as init, d as _assertThisInitialized, e as dispatch_dev, S as SvelteComponentDev, v as validate_each_argument, s as safe_not_equal, f as element, t as text, g as space, h as claim_element, j as children, k as claim_text, l as detach_dev, m as claim_space, n as attr_dev, o as add_location, H as HtmlTag, p as insert_dev, q as append_dev, r as noop, u as query_selector_all, w as _slicedToArray, x as destroy_each, y as validate_slots } from './client.dff2ca0f.js';
+import { _ as _inherits, a as _getPrototypeOf, b as _possibleConstructorReturn, c as _classCallCheck, i as init, d as _assertThisInitialized, e as dispatch_dev, S as SvelteComponentDev, v as validate_each_argument, s as safe_not_equal, f as element, t as text, g as space, h as claim_element, j as children, k as claim_text, l as claim_space, m as detach_dev, H as HtmlTag, n as attr_dev, o as add_location, p as insert_dev, q as append_dev, r as noop, u as query_selector_all, w as _slicedToArray, x as destroy_each, y as validate_slots } from './client.886afe2a.js';
 
 function cubicOut(t) {
   var f = t - 1.0;
@@ -50,12 +50,12 @@ function create_each_block(ctx) {
   /*tile*/
   ctx[1].title + "";
   var t0;
-  var a_href_value;
   var t1;
   var html_tag;
   var raw_value =
   /*tile*/
   ctx[1].icon + "";
+  var a_href_value;
   var t2;
   var div_class_value;
   var block = {
@@ -77,18 +77,18 @@ function create_each_block(ctx) {
       });
       var a_nodes = children(a);
       t0 = claim_text(a_nodes, t0_value);
+      t1 = claim_space(a_nodes);
       a_nodes.forEach(detach_dev);
-      t1 = claim_space(div_nodes);
       t2 = claim_space(div_nodes);
       div_nodes.forEach(detach_dev);
       this.h();
     },
     h: function hydrate() {
+      html_tag = new HtmlTag(null);
       attr_dev(a, "href", a_href_value =
       /*tile*/
       ctx[1].url);
       add_location(a, file, 49, 8, 6520);
-      html_tag = new HtmlTag(t2);
       attr_dev(div, "class", div_class_value = "tile " +
       /*tile*/
       ctx[1].color + " svelte-1wnovbj");
@@ -98,8 +98,8 @@ function create_each_block(ctx) {
       insert_dev(target, div, anchor);
       append_dev(div, a);
       append_dev(a, t0);
-      append_dev(div, t1);
-      html_tag.m(raw_value, div);
+      append_dev(a, t1);
+      html_tag.m(raw_value, a);
       append_dev(div, t2);
     },
     p: noop,
