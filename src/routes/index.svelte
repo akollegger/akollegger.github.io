@@ -34,8 +34,9 @@ import { slide } from 'svelte/transition';
   <div class="grid grid-cols-3 gap-4">
     {#each tiles as tile}
       <div class="tile {tile.color}">
-        <a href="{tile.url}">{tile.title}</a>
-        {@html tile.icon}
+        <a href="{tile.url}">{tile.title}
+          {@html tile.icon}
+        </a>
       </div>
     {/each}
   </div>
